@@ -1,6 +1,7 @@
 import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
+import { Router } from '@angular/router';
 import { TodoService } from '../todo.service';
 import { AuthService } from '../auth.service';
 import { Todo, TodoCreate } from '../todo.interface';
@@ -303,7 +304,8 @@ export class TodoComponent implements OnInit {
 
   constructor(
     private todoService: TodoService,
-    private authService: AuthService
+    private authService: AuthService,
+    private router: Router
   ) {}
 
   ngOnInit() {
@@ -312,44 +314,50 @@ export class TodoComponent implements OnInit {
 
   loadTodos() {
     this.isLoading = true;
+    this.error = null;
     this.todoService.getTodos().subscribe({
       next: (todos) => {
         this.todos = todos;
         this.isLoading = false;
-        this.error = null;
       },
       error: (error) => {
         console.error('Error loading todos:', error);
-        this.error = 'Failed to load tasks. Please try again.';
         this.isLoading = false;
+        if (error.status === 401) {
+          this.router.navigate(['/login']);
+        } else {
+          this.error = 'Failed to load tasks. Please try again.';
+        }
       }
     });
   }
 
   addTodo() {
-    if (!this.newTodo.title.trim()) return;
-
-    this.isLoading = true;
-    this.error = null;
-
-    this.todoService.createTodo(this.newTodo).subscribe({
-      next: (todo) => {
-        this.todos.unshift(todo);
-        this.newTodo = { title: '', description: '' };
-        this.isLoading = false;
-      },
-      error: (error) => {
-        console.error('Error adding todo:', error);
-        this.error = 'Failed to add task. Please try again.';
-        this.isLoading = false;
-      }
-    });
+    if (this.newTodo.title.trim()) {
+      this.isLoading = true;
+      this.error = null;
+      this.todoService.createTodo(this.newTodo).subscribe({
+        next: (todo) => {
+          this.todos.push(todo);
+          this.newTodo = { title: '', description: '' };
+          this.isLoading = false;
+        },
+        error: (error) => {
+          console.error('Error creating todo:', error);
+          this.isLoading = false;
+          if (error.status === 401) {
+            this.router.navigate(['/login']);
+          } else {
+            this.error = 'Failed to create task. Please try again.';
+          }
+        }
+      });
+    }
   }
 
   acceptAllTodos() {
     this.isLoading = true;
     this.error = null;
-
     this.todoService.updateAllTodos(true).subscribe({
       next: (todos) => {
         this.todos = todos;
@@ -357,32 +365,39 @@ export class TodoComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error accepting all todos:', error);
-        this.error = 'Failed to accept all tasks. Please try again.';
         this.isLoading = false;
+        if (error.status === 401) {
+          this.router.navigate(['/login']);
+        } else {
+          this.error = 'Failed to update tasks. Please try again.';
+        }
       }
     });
   }
 
   allTodosCompleted(): boolean {
-    return this.todos.every(todo => todo.completed);
+    return this.todos.length > 0 && this.todos.every(todo => todo.completed);
   }
 
   toggleTodo(todo: Todo) {
     this.isLoading = true;
     this.error = null;
-
     this.todoService.updateTodoStatus(todo.id, !todo.completed).subscribe({
-      next: (response: Todo) => {
+      next: (updatedTodo) => {
         const index = this.todos.findIndex(t => t.id === todo.id);
         if (index !== -1) {
-          this.todos[index] = response;
+          this.todos[index] = updatedTodo;
         }
         this.isLoading = false;
       },
-      error: (error: any) => {
-        console.error('Error updating todo:', error);
-        this.error = 'Failed to update task. Please try again.';
+      error: (error) => {
+        console.error('Error toggling todo:', error);
         this.isLoading = false;
+        if (error.status === 401) {
+          this.router.navigate(['/login']);
+        } else {
+          this.error = 'Failed to update task. Please try again.';
+        }
       }
     });
   }
@@ -390,7 +405,6 @@ export class TodoComponent implements OnInit {
   deleteTodo(todo: Todo) {
     this.isLoading = true;
     this.error = null;
-
     this.todoService.deleteTodo(todo.id).subscribe({
       next: () => {
         this.todos = this.todos.filter(t => t.id !== todo.id);
@@ -398,8 +412,12 @@ export class TodoComponent implements OnInit {
       },
       error: (error) => {
         console.error('Error deleting todo:', error);
-        this.error = 'Failed to delete task. Please try again.';
         this.isLoading = false;
+        if (error.status === 401) {
+          this.router.navigate(['/login']);
+        } else {
+          this.error = 'Failed to delete task. Please try again.';
+        }
       }
     });
   }

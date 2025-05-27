@@ -1,22 +1,24 @@
-from fastapi import FastAPI, HTTPException, Response, Cookie
+from fastapi import FastAPI, HTTPException, Response, Cookie, Depends
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
 from typing import List, Optional
 import sqlite3
 from database import (
     create_user, verify_user, init_db as init_database,
-    create_session, delete_session
+    create_session, delete_session, verify_session
 )
 
 app = FastAPI()
 
-# Enable CORS
+# Enable CORS with proper configuration
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:4200"],
+    allow_origins=["http://localhost:4200"],  # Your frontend URL
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
+    expose_headers=["*"],
+    max_age=3600,
 )
 
 # Models
@@ -49,6 +51,19 @@ class UpdateAllTodosRequest(BaseModel):
 
 # Initialize database
 init_database()
+
+# Authentication dependency
+async def get_current_user(session_token: str = Cookie(None)) -> User:
+    print(f"Checking authentication with token: {session_token}")
+    if not session_token:
+        raise HTTPException(status_code=401, detail="Not authenticated")
+    
+    user = verify_session(session_token)
+    print(f"Verified session result: {user}")
+    if not user:
+        raise HTTPException(status_code=401, detail="Session expired or invalid")
+    
+    return User(**user)
 
 @app.post("/auth/signup", response_model=User)
 async def signup(user: UserCreate):
@@ -85,12 +100,13 @@ async def login(user: UserLogin, response: Response):
         key="session_token",
         value=session_token,
         httponly=True,
-        secure=True,
-        samesite="strict",
+        secure=False,  # Set to False for development
+        samesite="lax",  # Changed from strict to lax
         max_age=7 * 24 * 60 * 60  # 7 days
     )
     
     print(f"User verified successfully: {result}")
+    print(f"Session token created: {session_token}")
     return result
 
 @app.post("/auth/logout")
@@ -113,24 +129,24 @@ async def logout(
     return {"message": "Logged out successfully"}
 
 @app.get("/todos/", response_model=List[Todo])
-async def get_todos():
+async def get_todos(current_user: User = Depends(get_current_user)):
     conn = sqlite3.connect('todos.db')
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
-    cursor.execute('SELECT * FROM todos')
+    cursor.execute('SELECT * FROM todos WHERE user_id = ?', (current_user.id,))
     todos = [dict(row) for row in cursor.fetchall()]
     conn.close()
     return todos
 
 @app.post("/todos/", response_model=Todo)
-async def create_todo(todo: TodoCreate):
+async def create_todo(todo: TodoCreate, current_user: User = Depends(get_current_user)):
     conn = sqlite3.connect('todos.db')
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     
     cursor.execute(
-        'INSERT INTO todos (title, description) VALUES (?, ?)',
-        (todo.title, todo.description)
+        'INSERT INTO todos (title, description, user_id) VALUES (?, ?, ?)',
+        (todo.title, todo.description, current_user.id)
     )
     conn.commit()
     
@@ -144,34 +160,34 @@ async def create_todo(todo: TodoCreate):
     return created_todo
 
 @app.patch("/todos/", response_model=List[Todo])
-async def update_all_todos(request: UpdateAllTodosRequest):
+async def update_all_todos(request: UpdateAllTodosRequest, current_user: User = Depends(get_current_user)):
     conn = sqlite3.connect('todos.db')
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     
-    # Update all todos
+    # Update all todos for the current user
     cursor.execute(
-        'UPDATE todos SET completed = ?',
-        (request.completed,)
+        'UPDATE todos SET completed = ? WHERE user_id = ?',
+        (request.completed, current_user.id)
     )
     conn.commit()
     
-    # Get all updated todos
-    cursor.execute('SELECT * FROM todos')
+    # Get all updated todos for the current user
+    cursor.execute('SELECT * FROM todos WHERE user_id = ?', (current_user.id,))
     todos = [dict(row) for row in cursor.fetchall()]
     conn.close()
     return todos
 
 @app.patch("/todos/{todo_id}", response_model=Todo)
-async def update_todo(todo_id: int, request: UpdateAllTodosRequest):
+async def update_todo(todo_id: int, request: UpdateAllTodosRequest, current_user: User = Depends(get_current_user)):
     conn = sqlite3.connect('todos.db')
     conn.row_factory = sqlite3.Row
     cursor = conn.cursor()
     
-    # Update the specific todo
+    # Update the specific todo only if it belongs to the current user
     cursor.execute(
-        'UPDATE todos SET completed = ? WHERE id = ?',
-        (request.completed, todo_id)
+        'UPDATE todos SET completed = ? WHERE id = ? AND user_id = ?',
+        (request.completed, todo_id, current_user.id)
     )
     conn.commit()
     
@@ -186,10 +202,20 @@ async def update_todo(todo_id: int, request: UpdateAllTodosRequest):
     return todo
 
 @app.delete("/todos/{todo_id}")
-async def delete_todo(todo_id: int):
+async def delete_todo(todo_id: int, current_user: User = Depends(get_current_user)):
     conn = sqlite3.connect('todos.db')
     cursor = conn.cursor()
-    cursor.execute('DELETE FROM todos WHERE id = ?', (todo_id,))
+    
+    # Delete the todo only if it belongs to the current user
+    cursor.execute(
+        'DELETE FROM todos WHERE id = ? AND user_id = ?',
+        (todo_id, current_user.id)
+    )
     conn.commit()
+    
+    if cursor.rowcount == 0:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Todo not found")
+        
     conn.close()
     return {"message": "Todo deleted successfully"} 

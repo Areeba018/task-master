@@ -37,16 +37,18 @@ def init_db():
                 )
             ''')
             
-            print("Creating todos table...")
-            # Create todos table with user_id foreign key
+            print("Recreating todos table...")
+            # Drop and recreate todos table with user_id foreign key
+            cursor.execute('DROP TABLE IF EXISTS todos')
             cursor.execute('''
-                CREATE TABLE IF NOT EXISTS todos (
+                CREATE TABLE todos (
                     id INTEGER PRIMARY KEY AUTOINCREMENT,
                     title TEXT NOT NULL,
                     description TEXT,
                     completed BOOLEAN DEFAULT FALSE,
                     user_id INTEGER NOT NULL,
                     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    last_modified_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
                     FOREIGN KEY (user_id) REFERENCES users (id)
                 )
             ''')
@@ -62,6 +64,9 @@ def init_db():
                     FOREIGN KEY (user_id) REFERENCES users (id)
                 )
             ''')
+            
+            # Drop task_history table if it exists
+            cursor.execute('DROP TABLE IF EXISTS task_history')
             
             # Verify tables were created
             cursor.execute("SELECT name FROM sqlite_master WHERE type='table';")
@@ -193,64 +198,112 @@ def delete_session(session_token: str) -> bool:
 
 # Updated Todo Functions to include user_id
 def get_user_todos(user_id: int) -> List[Dict]:
+    """Get all todos for a user with their latest status."""
     conn = create_connection()
     todos = []
     if conn is not None:
         try:
             cursor = conn.cursor()
-            cursor.execute(
-                'SELECT id, title, description, completed FROM todos WHERE user_id = ?',
-                (user_id,)
-            )
+            cursor.execute('''
+                SELECT 
+                    t.id,
+                    t.title,
+                    t.description,
+                    t.completed,
+                    t.created_at,
+                    t.last_modified_at,
+                    u.username as created_by
+                FROM todos t
+                JOIN users u ON t.user_id = u.id
+                WHERE t.user_id = ?
+                ORDER BY t.completed ASC, t.last_modified_at DESC
+            ''', (user_id,))
+            
             rows = cursor.fetchall()
             for row in rows:
                 todos.append(dict(row))
+        except Exception as e:
+            print(f"Error fetching todos: {e}")
         finally:
             conn.close()
     return todos
 
 def create_todo(user_id: int, title: str, description: Optional[str] = None) -> Optional[Dict]:
+    """Create a new todo."""
     conn = create_connection()
     if conn is not None:
         try:
             cursor = conn.cursor()
-            cursor.execute(
-                'INSERT INTO todos (title, description, user_id) VALUES (?, ?, ?)',
-                (title, description, user_id)
-            )
-            conn.commit()
+            now = datetime.utcnow()
             
             cursor.execute(
-                'SELECT id, title, description, completed FROM todos WHERE id = ?',
-                (cursor.lastrowid,)
+                'INSERT INTO todos (title, description, user_id, created_at, last_modified_at) VALUES (?, ?, ?, ?, ?)',
+                (title, description, user_id, now, now)
             )
+            conn.commit()
+            todo_id = cursor.lastrowid
+            
+            # Return the created todo
+            cursor.execute('''
+                SELECT 
+                    t.id,
+                    t.title,
+                    t.description,
+                    t.completed,
+                    t.created_at,
+                    t.last_modified_at,
+                    u.username as created_by
+                FROM todos t
+                JOIN users u ON t.user_id = u.id
+                WHERE t.id = ?
+            ''', (todo_id,))
             return dict(cursor.fetchone())
+        except Exception as e:
+            print(f"Error creating todo: {e}")
+            return None
         finally:
             conn.close()
     return None
 
 def update_todo_status(user_id: int, todo_id: int, completed: bool) -> Optional[Dict]:
+    """Update a todo's status."""
     conn = create_connection()
     if conn is not None:
         try:
             cursor = conn.cursor()
+            now = datetime.utcnow()
+            
             cursor.execute(
-                'UPDATE todos SET completed = ? WHERE id = ? AND user_id = ?',
-                (completed, todo_id, user_id)
+                'UPDATE todos SET completed = ?, last_modified_at = ? WHERE id = ? AND user_id = ?',
+                (completed, now, todo_id, user_id)
             )
             conn.commit()
             
             if cursor.rowcount > 0:
-                cursor.execute(
-                    'SELECT id, title, description, completed FROM todos WHERE id = ?',
-                    (todo_id,)
-                )
+                cursor.execute('''
+                    SELECT 
+                        t.id,
+                        t.title,
+                        t.description,
+                        t.completed,
+                        t.created_at,
+                        t.last_modified_at,
+                        u.username as created_by
+                    FROM todos t
+                    JOIN users u ON t.user_id = u.id
+                    WHERE t.id = ?
+                ''', (todo_id,))
                 return dict(cursor.fetchone())
+            return None
+        except Exception as e:
+            print(f"Error updating todo: {e}")
+            return None
         finally:
             conn.close()
     return None
 
 def delete_todo(user_id: int, todo_id: int) -> bool:
+    """Delete a todo permanently."""
     conn = create_connection()
     if conn is not None:
         try:
@@ -261,6 +314,9 @@ def delete_todo(user_id: int, todo_id: int) -> bool:
             )
             conn.commit()
             return cursor.rowcount > 0
+        except Exception as e:
+            print(f"Error deleting todo: {e}")
+            return False
         finally:
             conn.close()
     return False
