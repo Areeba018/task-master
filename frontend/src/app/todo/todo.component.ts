@@ -15,7 +15,6 @@ import { Todo, TodoCreate } from '../todo.interface';
       <!-- Header -->
       <header class="header">
         <h1>TaskMaster</h1>
-        <button (click)="logout()" class="logout-button">Logout</button>
       </header>
 
       <!-- Main content -->

@@ -12,8 +12,7 @@ import { RouterLink } from '@angular/router';
         <h1>Welcome to TaskMaster</h1>
         <p class="subtitle">Organize your tasks efficiently and boost your productivity</p>
         <div class="cta-buttons">
-          <a routerLink="/login" class="btn btn-primary">Login</a>
-          <a routerLink="/signup" class="btn btn-secondary">Sign Up</a>
+          <a routerLink="/tasks" class="btn btn-primary">Get Started</a>
         </div>
       </div>
 
