@@ -4,6 +4,7 @@ import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
 import { TodoService } from '../todo.service';
 import { AuthService } from '../auth.service';
+import { ThemeService } from '../theme.service';
 import { Todo, TodoCreate } from '../todo.interface';
 
 @Component({
@@ -11,7 +12,7 @@ import { Todo, TodoCreate } from '../todo.interface';
   standalone: true,
   imports: [CommonModule, FormsModule],
   template: `
-    <div class="todo-app">
+    <div class="todo-app" [class.dark-theme]="themeService.isDark$ | async">
       <!-- Header -->
       <header class="header">
         <h1>TaskMaster</h1>
@@ -117,10 +118,15 @@ import { Todo, TodoCreate } from '../todo.interface';
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: #fff;
+      background: #ffffff;
       padding: 20px;
       margin-bottom: 30px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .dark-theme .header {
+      background: #1a202c;
+      color: #ffffff;
     }
 
     .header h1 {
@@ -129,24 +135,18 @@ import { Todo, TodoCreate } from '../todo.interface';
       font-size: 24px;
     }
 
-    .logout-button {
-      padding: 8px 16px;
-      background: #dc3545;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      transition: background-color 0.2s;
-    }
-
-    .logout-button:hover {
-      background: #c82333;
+    .dark-theme .header h1 {
+      color: #ffffff;
     }
 
     .main-content {
-      background: #fff;
+      background: #ffffff;
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+
+    .dark-theme .main-content {
+      background: #1a202c;
     }
 
     .add-todo-form {
@@ -156,11 +156,27 @@ import { Todo, TodoCreate } from '../todo.interface';
       border-bottom: 1px solid #eee;
     }
 
+    .dark-theme .add-todo-form {
+      border-bottom: 1px solid #4a5568;
+    }
+
     .input-field {
       padding: 8px 12px;
       border: 1px solid #ddd;
       border-radius: 4px;
       flex: 1;
+      background: #ffffff;
+      color: #333;
+    }
+
+    .dark-theme .input-field {
+      background: #2d3748;
+      border-color: #4a5568;
+      color: #ffffff;
+    }
+
+    .dark-theme .input-field::placeholder {
+      color: #a0aec0;
     }
 
     .input-field:focus {
@@ -192,6 +208,10 @@ import { Todo, TodoCreate } from '../todo.interface';
       border-bottom: 1px solid #eee;
     }
 
+    .dark-theme .todo-actions {
+      border-bottom: 1px solid #4a5568;
+    }
+
     .todo-list {
       padding: 20px;
     }
@@ -202,6 +222,10 @@ import { Todo, TodoCreate } from '../todo.interface';
       padding: 20px;
     }
 
+    .dark-theme .empty-state {
+      color: #a0aec0;
+    }
+
     .todo-item {
       display: flex;
       align-items: center;
@@ -209,6 +233,14 @@ import { Todo, TodoCreate } from '../todo.interface';
       padding: 12px;
       border-bottom: 1px solid #eee;
       animation: fadeIn 0.3s ease;
+      background: #ffffff;
+      margin: 8px;
+      border-radius: 4px;
+    }
+
+    .dark-theme .todo-item {
+      background: #2d3748;
+      border-bottom: 1px solid #4a5568;
     }
 
     .todo-item:last-child {
@@ -238,16 +270,29 @@ import { Todo, TodoCreate } from '../todo.interface';
       color: #333;
     }
 
+    .dark-theme .todo-title {
+      color: #ffffff;
+    }
+
     .todo-description {
       margin: 4px 0 0;
       font-size: 14px;
       color: #666;
     }
 
+    .dark-theme .todo-description {
+      color: #a0aec0;
+    }
+
     .completed .todo-title,
     .completed .todo-description {
       text-decoration: line-through;
       color: #999;
+    }
+
+    .dark-theme .completed .todo-title,
+    .dark-theme .completed .todo-description {
+      color: #718096;
     }
 
     .delete-button {
@@ -284,6 +329,10 @@ import { Todo, TodoCreate } from '../todo.interface';
       padding: 20px;
     }
 
+    .dark-theme .loading-state {
+      color: #a0aec0;
+    }
+
     .input-field:disabled,
     .add-button:disabled,
     .checkbox:disabled {
@@ -304,7 +353,8 @@ export class TodoComponent implements OnInit {
   constructor(
     private todoService: TodoService,
     private authService: AuthService,
-    private router: Router
+    private router: Router,
+    public themeService: ThemeService
   ) {}
 
   ngOnInit() {

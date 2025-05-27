@@ -2,13 +2,14 @@ import { Component } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterOutlet, RouterLink } from '@angular/router';
 import { AuthService } from './auth.service';
+import { ThemeService } from './theme.service';
 
 @Component({
   selector: 'app-root',
   standalone: true,
   imports: [CommonModule, RouterOutlet, RouterLink],
   template: `
-    <nav class="navbar">
+    <nav class="navbar" [class.dark-theme]="themeService.isDark$ | async">
       <div class="navbar-container">
         <a routerLink="/" class="navbar-brand">TaskMaster</a>
         <div class="navbar-menu">
@@ -35,22 +36,53 @@ import { AuthService } from './auth.service';
             <a routerLink="/login" class="nav-link">Login</a>
             <a routerLink="/signup" class="nav-link signup">Sign Up</a>
           </ng-container>
+          <button class="theme-toggle" (click)="toggleTheme()" [attr.aria-label]="'Toggle theme'">
+            <span *ngIf="!(themeService.isDark$ | async)" class="theme-icon">🌙</span>
+            <span *ngIf="themeService.isDark$ | async" class="theme-icon">☀️</span>
+          </button>
         </div>
       </div>
     </nav>
 
-    <main>
+    <main [class.dark-theme]="themeService.isDark$ | async">
       <router-outlet></router-outlet>
     </main>
   `,
   styles: [`
+    /* Light theme variables */
+    :root {
+      --bg-primary: #ffffff;
+      --bg-secondary: #f8f9fa;
+      --text-primary: #2d3748;
+      --text-secondary: #4a5568;
+      --border-color: #e2e8f0;
+      --accent-color: #4299e1;
+      --accent-hover: #3182ce;
+      --danger-color: #e53e3e;
+      --danger-hover: #c53030;
+    }
+
+    /* Dark theme variables */
+    .dark-theme {
+      --bg-primary: #1a202c;
+      --bg-secondary: #2d3748;
+      --text-primary: #f7fafc;
+      --text-secondary: #e2e8f0;
+      --border-color: #4a5568;
+      --accent-color: #63b3ed;
+      --accent-hover: #4299e1;
+      --danger-color: #fc8181;
+      --danger-hover: #f56565;
+    }
+
     .navbar {
-      background-color: #ffffff;
+      background-color: var(--bg-primary);
       box-shadow: 0 2px 4px rgba(0,0,0,0.05);
       padding: 1rem 0;
       position: sticky;
       top: 0;
       z-index: 1000;
+      transition: all 0.3s ease;
     }
 
     .navbar-container {
@@ -65,13 +97,13 @@ import { AuthService } from './auth.service';
     .navbar-brand {
       font-size: 1.5rem;
       font-weight: bold;
-      color: #2d3748;
+      color: var(--text-primary);
       text-decoration: none;
       transition: color 0.3s ease;
     }
 
     .navbar-brand:hover {
-      color: #4299e1;
+      color: var(--accent-color);
     }
 
     .navbar-menu {
@@ -81,27 +113,57 @@ import { AuthService } from './auth.service';
     }
 
     .nav-link {
-      color: #4a5568;
+      color: var(--text-secondary);
       text-decoration: none;
       font-size: 1rem;
       font-weight: 500;
-      transition: color 0.3s ease;
+      transition: all 0.3s ease;
       padding: 0.5rem 1rem;
       border-radius: 6px;
     }
 
     .nav-link:hover {
-      color: #4299e1;
-      background-color: #ebf8ff;
+      color: var(--accent-color);
+      background-color: var(--bg-secondary);
     }
 
     .nav-link.signup {
-      background-color: #4299e1;
-      color: white;
+      background-color: #63b3ed;
+      color: #ffffff;
+      padding: 0.5rem 1.5rem;
+      border-radius: 6px;
+      font-weight: 600;
+      transition: all 0.3s ease;
     }
 
     .nav-link.signup:hover {
-      background-color: #3182ce;
+      background-color: #4299e1;
+      transform: translateY(-1px);
+    }
+
+    .theme-toggle {
+      background: none;
+      border: none;
+      cursor: pointer;
+      font-size: 1.25rem;
+      padding: 0.5rem;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.3s ease;
+      color: var(--text-secondary);
+      background-color: var(--bg-primary);
+    }
+
+    .theme-toggle:hover {
+      background-color: var(--bg-secondary);
+    }
+
+    .theme-icon {
+      font-size: 1.25rem;
     }
 
     .user-profile {
@@ -112,7 +174,7 @@ import { AuthService } from './auth.service';
     .user-avatar {
       width: 40px;
       height: 40px;
-      background-color: #4299e1;
+      background-color: #63b3ed;
       border-radius: 50%;
       display: flex;
       align-items: center;
@@ -122,10 +184,11 @@ import { AuthService } from './auth.service';
 
     .user-profile:hover .user-avatar {
       transform: scale(1.05);
+      background-color: #4299e1;
     }
 
     .avatar-text {
-      color: white;
+      color: #ffffff;
       font-weight: bold;
       font-size: 1.1rem;
       text-transform: uppercase;
@@ -135,7 +198,7 @@ import { AuthService } from './auth.service';
       position: absolute;
       top: calc(100% + 0.5rem);
       right: 0;
-      background-color: white;
+      background-color: #ffffff;
       border-radius: 8px;
       box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
       padding: 1rem;
@@ -144,6 +207,10 @@ import { AuthService } from './auth.service';
       visibility: hidden;
       transform: translateY(-10px);
       transition: all 0.3s ease;
+    }
+
+    .dark-theme .user-dropdown {
+      background-color: #1a202c;
     }
 
     .user-dropdown.show {
@@ -161,18 +228,18 @@ import { AuthService } from './auth.service';
 
     .username {
       font-weight: 600;
-      color: #2d3748;
+      color: var(--text-primary);
       font-size: 1rem;
     }
 
     .email {
-      color: #718096;
+      color: var(--text-secondary);
       font-size: 0.875rem;
     }
 
     .dropdown-divider {
       height: 1px;
-      background-color: #e2e8f0;
+      background-color: var(--border-color);
       margin: 0.5rem -1rem;
     }
 
@@ -182,7 +249,7 @@ import { AuthService } from './auth.service';
       gap: 0.5rem;
       width: 100%;
       padding: 0.5rem;
-      color: #e53e3e;
+      color: var(--danger-color);
       background: none;
       border: none;
       border-radius: 4px;
@@ -193,19 +260,24 @@ import { AuthService } from './auth.service';
     }
 
     .logout-btn:hover {
-      background-color: #fff5f5;
+      color: var(--danger-hover);
+      background-color: var(--bg-secondary);
     }
 
     main {
       min-height: calc(100vh - 64px);
-      background-color: #f8f9fa;
+      background-color: var(--bg-secondary);
+      transition: all 0.3s ease;
     }
   `]
 })
 export class AppComponent {
   isDropdownOpen = false;
 
-  constructor(public auth: AuthService) {}
+  constructor(
+    public auth: AuthService,
+    public themeService: ThemeService
+  ) {}
 
   getUserInitials(): string {
     const user = this.auth.getCurrentUser();
@@ -215,6 +287,10 @@ export class AppComponent {
 
   toggleDropdown(): void {
     this.isDropdownOpen = !this.isDropdownOpen;
+  }
+
+  toggleTheme(): void {
+    this.themeService.toggleTheme();
   }
 
   logout(): void {
