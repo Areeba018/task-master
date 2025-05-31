@@ -170,89 +170,48 @@ import { Todo, TodoCreate } from '../todo.interface';
       display: flex;
       justify-content: space-between;
       align-items: center;
-      background: #ffffff;
+      background: var(--bg-primary);
       padding: 20px;
       margin-bottom: 30px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
 
-    .dark-theme .header {
-      background: #1a202c;
-      color: #ffffff;
-    }
-
     .header h1 {
       margin: 0;
-      color: #333;
+      color: var(--text-primary);
       font-size: 24px;
     }
 
-    .dark-theme .header h1 {
-      color: #ffffff;
-    }
-
     .main-content {
-      background: #ffffff;
+      background: var(--bg-primary);
       border-radius: 8px;
       box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    }
-
-    .dark-theme .main-content {
-      background: #1a202c;
     }
 
     .add-todo-form {
       padding: 20px;
       display: flex;
       gap: 10px;
-      border-bottom: 1px solid #eee;
-    }
-
-    .dark-theme .add-todo-form {
-      border-bottom: 1px solid #4a5568;
-    }
-
-    .input-field {
-      padding: 8px 12px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      flex: 1;
-      background: #ffffff;
-      color: #333;
-    }
-
-    .dark-theme .input-field {
-      background: #2d3748;
-      border-color: #4a5568;
-      color: #ffffff;
-    }
-
-    .dark-theme .input-field::placeholder {
-      color: #a0aec0;
-    }
-
-    .input-field:focus {
-      outline: none;
-      border-color: #007bff;
+      border-bottom: 1px solid var(--border-color);
     }
 
     .add-button {
       padding: 8px 16px;
-      background: #007bff;
+      background: var(--accent-color);
       color: white;
       border: none;
       border-radius: 4px;
       cursor: pointer;
-      transition: background-color 0.2s;
-    }
+      transition: all 0.2s;
 
-    .add-button:hover {
-      background: #0056b3;
-    }
+      &:hover:not(:disabled) {
+        background: var(--accent-hover);
+      }
 
-    .add-button:disabled {
-      background: #ccc;
-      cursor: not-allowed;
+      &:disabled {
+        background: var(--text-secondary);
+        cursor: not-allowed;
+      }
     }
 
     .complete-all-container {
@@ -268,21 +227,10 @@ import { Todo, TodoCreate } from '../todo.interface';
       font-size: 0.875rem;
       cursor: pointer;
       user-select: none;
-    }
 
-    .complete-all-label:hover {
-      color: var(--accent-color);
-    }
-
-    .complete-all-checkbox {
-      width: 16px;
-      height: 16px;
-      cursor: pointer;
-    }
-
-    .complete-all-checkbox:disabled {
-      cursor: not-allowed;
-      opacity: 0.5;
+      &:hover {
+        color: var(--accent-color);
+      }
     }
 
     .todo-list {
@@ -291,12 +239,8 @@ import { Todo, TodoCreate } from '../todo.interface';
 
     .empty-state {
       text-align: center;
-      color: #666;
+      color: var(--text-secondary);
       padding: 20px;
-    }
-
-    .dark-theme .empty-state {
-      color: #a0aec0;
     }
 
     .todo-item {
@@ -304,20 +248,21 @@ import { Todo, TodoCreate } from '../todo.interface';
       align-items: center;
       justify-content: space-between;
       padding: 12px;
-      border-bottom: 1px solid #eee;
+      border-bottom: 1px solid var(--border-color);
       animation: fadeIn 0.3s ease;
-      background: #ffffff;
+      background: var(--bg-primary);
       margin: 8px;
       border-radius: 4px;
-    }
 
-    .dark-theme .todo-item {
-      background: #2d3748;
-      border-bottom: 1px solid #4a5568;
-    }
+      &:last-child {
+        border-bottom: none;
+      }
 
-    .todo-item:last-child {
-      border-bottom: none;
+      &.completed .todo-title,
+      &.completed .todo-description {
+        text-decoration: line-through;
+        color: var(--text-secondary);
+      }
     }
 
     .todo-content {
@@ -327,12 +272,6 @@ import { Todo, TodoCreate } from '../todo.interface';
       flex: 1;
     }
 
-    .checkbox {
-      width: 18px;
-      height: 18px;
-      cursor: pointer;
-    }
-
     .todo-text {
       flex: 1;
       transition: all 0.2s ease;
@@ -340,78 +279,15 @@ import { Todo, TodoCreate } from '../todo.interface';
 
     .todo-title {
       margin: 0;
-      font-size: 16px;
-      color: #333;
-    }
-
-    .dark-theme .todo-title {
-      color: #ffffff;
+      font-size: 1rem;
+      color: var(--text-primary);
+      font-weight: 500;
     }
 
     .todo-description {
-      margin: 4px 0 0;
-      font-size: 14px;
-      color: #666;
-    }
-
-    .dark-theme .todo-description {
-      color: #a0aec0;
-    }
-
-    .completed .todo-title,
-    .completed .todo-description {
-      text-decoration: line-through;
-      color: #999;
-    }
-
-    .dark-theme .completed .todo-title,
-    .dark-theme .completed .todo-description {
-      color: #718096;
-    }
-
-    .delete-button {
-      background: none;
-      border: none;
-      color: #ff4444;
-      font-size: 18px;
-      cursor: pointer;
-      padding: 4px 8px;
-      opacity: 0.7;
-    }
-
-    .delete-button:hover {
-      opacity: 1;
-    }
-
-    @keyframes fadeIn {
-      from { opacity: 0; transform: translateY(10px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-
-    .error-message {
-      background-color: #ffebee;
-      color: #c62828;
-      padding: 12px;
-      margin: 0 20px 20px;
-      border-radius: 4px;
-      text-align: center;
-    }
-
-    .loading-state {
-      text-align: center;
-      color: #666;
-      padding: 20px;
-    }
-
-    .dark-theme .loading-state {
-      color: #a0aec0;
-    }
-
-    .input-field:disabled,
-    .add-button:disabled,
-    .checkbox:disabled {
-      opacity: 0.7;
-      cursor: not-allowed;
+      margin: 0.25rem 0 0;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
     }
 
     .edit-form {
@@ -432,29 +308,12 @@ import { Todo, TodoCreate } from '../todo.interface';
       color: var(--text-primary);
       width: 100%;
       transition: all 0.2s ease;
-      font-family: 'Roboto', sans-serif;
-    }
 
-    .edit-input:focus {
-      outline: none;
-      border-color: #4299e1;
-      box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.2);
-    }
-
-    .dark-theme .edit-input {
-      background: var(--bg-secondary);
-      border-color: var(--border-color);
-      color: var(--text-primary);
-    }
-
-    .dark-theme .edit-input:focus {
-      border-color: #63b3ed;
-      box-shadow: 0 0 0 2px rgba(99, 179, 237, 0.2);
-    }
-
-    .edit-input::placeholder {
-      color: var(--text-secondary);
-      opacity: 0.7;
+      &:focus {
+        outline: none;
+        border-color: var(--accent-color);
+        box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.2);
+      }
     }
 
     .edit-actions {
@@ -471,87 +330,38 @@ import { Todo, TodoCreate } from '../todo.interface';
       font-weight: 500;
       cursor: pointer;
       transition: all 0.2s ease;
-      font-family: 'Roboto', sans-serif;
       display: flex;
       align-items: center;
       justify-content: center;
       min-width: 80px;
+
+      &:disabled {
+        cursor: not-allowed;
+        opacity: 0.7;
+        transform: none;
+      }
     }
 
     .save-button {
-      background: #4299e1;
+      background: var(--accent-color);
       color: white;
       border: none;
-    }
 
-    .save-button:hover:not(:disabled) {
-      background: #3182ce;
-      transform: translateY(-1px);
-    }
-
-    .save-button:disabled {
-      background: #a0aec0;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    .dark-theme .save-button:disabled {
-      background: #4a5568;
+      &:hover:not(:disabled) {
+        background: var(--accent-hover);
+        transform: translateY(-1px);
+      }
     }
 
     .cancel-button {
       background: transparent;
       border: 1px solid var(--border-color);
       color: var(--text-secondary);
-    }
 
-    .cancel-button:hover:not(:disabled) {
-      background: var(--bg-secondary);
-      transform: translateY(-1px);
-    }
-
-    .cancel-button:disabled {
-      opacity: 0.7;
-      cursor: not-allowed;
-      transform: none;
-    }
-
-    .edit-button {
-      background: none;
-      border: none;
-      color: #4299e1;
-      font-size: 1.1rem;
-      cursor: pointer;
-      padding: 0.5rem;
-      opacity: 0.8;
-      margin-right: 0.5rem;
-      border-radius: 6px;
-      transition: all 0.2s ease;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      width: 32px;
-      height: 32px;
-    }
-
-    .edit-button:hover:not(:disabled) {
-      opacity: 1;
-      background: rgba(66, 153, 225, 0.1);
-      transform: translateY(-1px);
-    }
-
-    .dark-theme .edit-button {
-      color: #63b3ed;
-    }
-
-    .dark-theme .edit-button:hover:not(:disabled) {
-      background: rgba(99, 179, 237, 0.1);
-    }
-
-    .edit-button:disabled {
-      opacity: 0.5;
-      cursor: not-allowed;
-      transform: none;
+      &:hover:not(:disabled) {
+        background: var(--bg-secondary);
+        transform: translateY(-1px);
+      }
     }
 
     .action-buttons {
@@ -560,33 +370,48 @@ import { Todo, TodoCreate } from '../todo.interface';
       gap: 0.5rem;
     }
 
-    @keyframes fadeIn {
-      from {
-        opacity: 0;
-        transform: translateY(-5px);
-      }
-      to {
-        opacity: 1;
-        transform: translateY(0);
-      }
-    }
-
-    .todo-text {
-      flex: 1;
+    .edit-button,
+    .delete-button {
+      background: none;
+      border: none;
+      cursor: pointer;
+      padding: 0.5rem;
+      opacity: 0.8;
+      border-radius: 6px;
       transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+      }
     }
 
-    .todo-title {
-      margin: 0;
-      font-size: 1rem;
-      color: var(--text-primary);
-      font-weight: 500;
+    .edit-button {
+      color: var(--accent-color);
+      font-size: 1.1rem;
+      margin-right: 0.5rem;
+
+      &:hover:not(:disabled) {
+        opacity: 1;
+        background: rgba(66, 153, 225, 0.1);
+        transform: translateY(-1px);
+      }
     }
 
-    .todo-description {
-      margin: 0.25rem 0 0;
-      font-size: 0.9rem;
-      color: var(--text-secondary);
+    .delete-button {
+      color: var(--danger-color);
+      font-size: 18px;
+
+      &:hover:not(:disabled) {
+        opacity: 1;
+        color: var(--danger-hover);
+      }
     }
   `]
 })

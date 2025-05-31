@@ -6,9 +6,97 @@
 
 /* Base styles */
 :root {
+  --bg-primary: #ffffff;
+  --bg-secondary: #f8f9fa;
+  --text-primary: #2d3748;
+  --text-secondary: #4a5568;
+  --border-color: #e2e8f0;
+  --accent-color: #4299e1;
+  --accent-hover: #3182ce;
+  --danger-color: #ff4444;
+  --danger-hover: #ff0000;
   font-family: 'Roboto', sans-serif;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Dark theme variables */
+.dark-theme {
+  --bg-primary: #1a202c;
+  --bg-secondary: #2d3748;
+  --text-primary: #f7fafc;
+  --text-secondary: #e2e8f0;
+  --border-color: #4a5568;
+  --accent-color: #63b3ed;
+  --accent-hover: #4299e1;
+}
+
+/* Common styles */
+.checkbox {
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+  &:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+}
+
+.input-field {
+  padding: 8px 12px;
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: 'Roboto', sans-serif;
+  
+  &:focus {
+    outline: none;
+    border-color: var(--accent-color);
+  }
+  
+  &:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+}
+
+.dark-theme .input-field {
+  background: var(--bg-secondary);
+  border-color: var(--border-color);
+  color: var(--text-primary);
+  
+  &::placeholder {
+    color: var(--text-secondary);
+  }
+}
+
+/* Common animations */
+@keyframes fadeIn {
+  from { 
+    opacity: 0; 
+    transform: translateY(-5px); 
+  }
+  to { 
+    opacity: 1; 
+    transform: translateY(0); 
+  }
+}
+
+/* Common utility classes */
+.error-message {
+  background-color: #ffebee;
+  color: #c62828;
+  padding: 12px;
+  margin: 0 20px 20px;
+  border-radius: 4px;
+  text-align: center;
+}
+
+.loading-state {
+  text-align: center;
+  color: var(--text-secondary);
+  padding: 20px;
 }
 
 body {
@@ -44,13 +132,6 @@ h1, h2, h3, h4, h5, h6 {
 
 .container-custom {
   @apply max-w-7xl mx-auto px-4 sm:px-6 lg:px-8;
-}
-
-.input-field {
-  @apply w-full px-4 py-2 border border-gray-300 rounded-md 
-         focus:ring-2 focus:ring-blue-500 focus:border-blue-500
-         placeholder-gray-400 text-gray-900;
-  font-family: 'Roboto', sans-serif;
 }
 
 .btn {
