@@ -60,6 +60,7 @@ import { ThemeService } from './theme.service';
       --accent-hover: #3182ce;
       --danger-color: #e53e3e;
       --danger-hover: #c53030;
+      font-family: 'Roboto', sans-serif;
     }
 
     /* Dark theme variables */
@@ -83,6 +84,7 @@ import { ThemeService } from './theme.service';
       top: 0;
       z-index: 1000;
       transition: all 0.3s ease;
+      font-family: 'Roboto', sans-serif;
     }
 
     .navbar-container {
@@ -100,6 +102,7 @@ import { ThemeService } from './theme.service';
       color: var(--text-primary);
       text-decoration: none;
       transition: color 0.3s ease;
+      font-family: 'Roboto', sans-serif;
     }
 
     .navbar-brand:hover {

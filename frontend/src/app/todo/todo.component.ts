@@ -66,14 +66,17 @@ import { Todo, TodoCreate } from '../todo.interface';
               No tasks available. Add your first task above!
             </div>
           } @else {
-            <div class="todo-actions">
-              <button
-                (click)="acceptAllTodos()"
-                class="accept-all-button"
-                [disabled]="isLoading || allTodosCompleted()"
-              >
-                Accept All
-              </button>
+            <div class="complete-all-container">
+              <label class="complete-all-label">
+                <input
+                  type="checkbox"
+                  [checked]="allTodosCompleted()"
+                  (change)="toggleAllTodos()"
+                  [disabled]="isLoading || todos.length === 0"
+                  class="checkbox complete-all-checkbox"
+                />
+                <span>Complete all tasks</span>
+              </label>
             </div>
           }
           @for (todo of todos; track todo.id) {
@@ -86,21 +89,70 @@ import { Todo, TodoCreate } from '../todo.interface';
                   class="checkbox"
                   [disabled]="isLoading"
                 />
-                <div class="todo-text">
-                  <p class="todo-title">{{ todo.title }}</p>
-                  @if (todo.description) {
-                    <p class="todo-description">{{ todo.description }}</p>
-                  }
-                </div>
+                @if (editingTodo?.id === todo.id) {
+                  <div class="edit-form">
+                    <input
+                      type="text"
+                      [ngModel]="editingTodo?.title"
+                      (ngModelChange)="editingTodo!.title = $event"
+                      class="edit-input"
+                      placeholder="Task title"
+                      [disabled]="isLoading"
+                    />
+                    <input
+                      type="text"
+                      [ngModel]="editingTodo?.description"
+                      (ngModelChange)="editingTodo!.description = $event"
+                      class="edit-input"
+                      placeholder="Description (optional)"
+                      [disabled]="isLoading"
+                    />
+                    <div class="edit-actions">
+                      <button 
+                        class="save-button" 
+                        (click)="saveEdit()"
+                        [disabled]="isLoading || !editingTodo?.title?.trim()"
+                      >
+                        Save
+                      </button>
+                      <button 
+                        class="cancel-button" 
+                        (click)="cancelEdit()"
+                        [disabled]="isLoading"
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                } @else {
+                  <div class="todo-text">
+                    <p class="todo-title">{{ todo.title }}</p>
+                    @if (todo.description) {
+                      <p class="todo-description">{{ todo.description }}</p>
+                    }
+                  </div>
+                }
               </div>
-              <button
-                (click)="deleteTodo(todo)"
-                class="delete-button"
-                title="Delete task"
-                [disabled]="isLoading"
-              >
-                ✕
-              </button>
+              <div class="action-buttons">
+                @if (editingTodo?.id !== todo.id) {
+                  <button
+                    (click)="startEdit(todo)"
+                    class="edit-button"
+                    title="Edit task"
+                    [disabled]="isLoading"
+                  >
+                    ✎
+                  </button>
+                }
+                <button
+                  (click)="deleteTodo(todo)"
+                  class="delete-button"
+                  title="Delete task"
+                  [disabled]="isLoading"
+                >
+                  ✕
+                </button>
+              </div>
             </div>
           }
         </div>
@@ -184,7 +236,7 @@ import { Todo, TodoCreate } from '../todo.interface';
       border-color: #007bff;
     }
 
-    .add-button, .accept-all-button {
+    .add-button {
       padding: 8px 16px;
       background: #007bff;
       color: white;
@@ -194,22 +246,43 @@ import { Todo, TodoCreate } from '../todo.interface';
       transition: background-color 0.2s;
     }
 
-    .add-button:hover, .accept-all-button:hover {
+    .add-button:hover {
       background: #0056b3;
     }
 
-    .add-button:disabled, .accept-all-button:disabled {
+    .add-button:disabled {
       background: #ccc;
       cursor: not-allowed;
     }
 
-    .todo-actions {
-      padding: 10px 20px;
-      border-bottom: 1px solid #eee;
+    .complete-all-container {
+      padding: 0.75rem 1.25rem;
+      border-bottom: 1px solid var(--border-color);
     }
 
-    .dark-theme .todo-actions {
-      border-bottom: 1px solid #4a5568;
+    .complete-all-label {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      color: var(--text-primary);
+      font-size: 0.875rem;
+      cursor: pointer;
+      user-select: none;
+    }
+
+    .complete-all-label:hover {
+      color: var(--accent-color);
+    }
+
+    .complete-all-checkbox {
+      width: 16px;
+      height: 16px;
+      cursor: pointer;
+    }
+
+    .complete-all-checkbox:disabled {
+      cursor: not-allowed;
+      opacity: 0.5;
     }
 
     .todo-list {
@@ -262,6 +335,7 @@ import { Todo, TodoCreate } from '../todo.interface';
 
     .todo-text {
       flex: 1;
+      transition: all 0.2s ease;
     }
 
     .todo-title {
@@ -339,6 +413,181 @@ import { Todo, TodoCreate } from '../todo.interface';
       opacity: 0.7;
       cursor: not-allowed;
     }
+
+    .edit-form {
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      flex: 1;
+      padding: 0.5rem 0;
+      animation: fadeIn 0.2s ease-in-out;
+    }
+
+    .edit-input {
+      padding: 0.5rem 0.75rem;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      font-size: 0.875rem;
+      background: var(--bg-primary);
+      color: var(--text-primary);
+      width: 100%;
+      transition: all 0.2s ease;
+      font-family: 'Roboto', sans-serif;
+    }
+
+    .edit-input:focus {
+      outline: none;
+      border-color: #4299e1;
+      box-shadow: 0 0 0 2px rgba(66, 153, 225, 0.2);
+    }
+
+    .dark-theme .edit-input {
+      background: var(--bg-secondary);
+      border-color: var(--border-color);
+      color: var(--text-primary);
+    }
+
+    .dark-theme .edit-input:focus {
+      border-color: #63b3ed;
+      box-shadow: 0 0 0 2px rgba(99, 179, 237, 0.2);
+    }
+
+    .edit-input::placeholder {
+      color: var(--text-secondary);
+      opacity: 0.7;
+    }
+
+    .edit-actions {
+      display: flex;
+      gap: 0.5rem;
+      margin-top: 0.5rem;
+    }
+
+    .save-button,
+    .cancel-button {
+      padding: 0.5rem 1rem;
+      border-radius: 6px;
+      font-size: 0.875rem;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      font-family: 'Roboto', sans-serif;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 80px;
+    }
+
+    .save-button {
+      background: #4299e1;
+      color: white;
+      border: none;
+    }
+
+    .save-button:hover:not(:disabled) {
+      background: #3182ce;
+      transform: translateY(-1px);
+    }
+
+    .save-button:disabled {
+      background: #a0aec0;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .dark-theme .save-button:disabled {
+      background: #4a5568;
+    }
+
+    .cancel-button {
+      background: transparent;
+      border: 1px solid var(--border-color);
+      color: var(--text-secondary);
+    }
+
+    .cancel-button:hover:not(:disabled) {
+      background: var(--bg-secondary);
+      transform: translateY(-1px);
+    }
+
+    .cancel-button:disabled {
+      opacity: 0.7;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .edit-button {
+      background: none;
+      border: none;
+      color: #4299e1;
+      font-size: 1.1rem;
+      cursor: pointer;
+      padding: 0.5rem;
+      opacity: 0.8;
+      margin-right: 0.5rem;
+      border-radius: 6px;
+      transition: all 0.2s ease;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 32px;
+      height: 32px;
+    }
+
+    .edit-button:hover:not(:disabled) {
+      opacity: 1;
+      background: rgba(66, 153, 225, 0.1);
+      transform: translateY(-1px);
+    }
+
+    .dark-theme .edit-button {
+      color: #63b3ed;
+    }
+
+    .dark-theme .edit-button:hover:not(:disabled) {
+      background: rgba(99, 179, 237, 0.1);
+    }
+
+    .edit-button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .action-buttons {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(-5px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .todo-text {
+      flex: 1;
+      transition: all 0.2s ease;
+    }
+
+    .todo-title {
+      margin: 0;
+      font-size: 1rem;
+      color: var(--text-primary);
+      font-weight: 500;
+    }
+
+    .todo-description {
+      margin: 0.25rem 0 0;
+      font-size: 0.9rem;
+      color: var(--text-secondary);
+    }
   `]
 })
 export class TodoComponent implements OnInit {
@@ -347,6 +596,7 @@ export class TodoComponent implements OnInit {
     title: '',
     description: ''
   };
+  editingTodo: Todo | null = null;
   error: string | null = null;
   isLoading = false;
 
@@ -404,16 +654,18 @@ export class TodoComponent implements OnInit {
     }
   }
 
-  acceptAllTodos() {
+  toggleAllTodos(): void {
+    const allCompleted = this.allTodosCompleted();
     this.isLoading = true;
     this.error = null;
-    this.todoService.updateAllTodos(true).subscribe({
+    
+    this.todoService.updateAllTodos(!allCompleted).subscribe({
       next: (todos) => {
         this.todos = todos;
         this.isLoading = false;
       },
       error: (error) => {
-        console.error('Error accepting all todos:', error);
+        console.error('Error updating all todos:', error);
         this.isLoading = false;
         if (error.status === 401) {
           this.router.navigate(['/login']);
@@ -473,5 +725,47 @@ export class TodoComponent implements OnInit {
 
   logout(): void {
     this.authService.logout();
+  }
+
+  startEdit(todo: Todo): void {
+    this.editingTodo = { ...todo };
+  }
+
+  cancelEdit(): void {
+    this.editingTodo = null;
+  }
+
+  saveEdit(): void {
+    if (!this.editingTodo || !this.editingTodo.title.trim()) {
+      return;
+    }
+
+    this.isLoading = true;
+    this.error = null;
+
+    const update: TodoCreate = {
+      title: this.editingTodo.title,
+      description: this.editingTodo.description
+    };
+
+    this.todoService.updateTodo(this.editingTodo.id, update).subscribe({
+      next: (updatedTodo) => {
+        const index = this.todos.findIndex(t => t.id === updatedTodo.id);
+        if (index !== -1) {
+          this.todos[index] = updatedTodo;
+        }
+        this.editingTodo = null;
+        this.isLoading = false;
+      },
+      error: (error) => {
+        console.error('Error updating todo:', error);
+        this.isLoading = false;
+        if (error.status === 401) {
+          this.router.navigate(['/login']);
+        } else {
+          this.error = 'Failed to update task. Please try again.';
+        }
+      }
+    });
   }
 } 

@@ -3,6 +3,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, EmailStr
 from typing import List, Optional
 import sqlite3
+from datetime import datetime
 from database import (
     create_user, verify_user, init_db as init_database,
     create_session, delete_session, verify_session
@@ -14,11 +15,11 @@ app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["http://localhost:4200"],  # Your frontend URL
-    allow_credentials=True,
-    allow_methods=["*"],
-    allow_headers=["*"],
-    expose_headers=["*"],
-    max_age=3600,
+    allow_credentials=True, # Allows sending cookies, authorization headers, or TLS client certificates. Useful if you're using sessions or tokens.
+    allow_methods=["*"], # Allows all HTTP methods (GET, POST, PUT, etc.). "*" means all methods.
+    allow_headers=["*"], # Allows all headers
+    expose_headers=["*"], # Allows all headers to be exposed to the frontend
+    max_age=3600, #  How long (in seconds) the results of a preflight request (like OPTIONS) can be cached. 3600 seconds = 1 hour.
 )
 
 # Models
@@ -200,6 +201,41 @@ async def update_todo(todo_id: int, request: UpdateAllTodosRequest, current_user
     todo = dict(cursor.fetchone())
     conn.close()
     return todo
+
+@app.put("/todos/{todo_id}", response_model=Todo)
+async def update_todo(todo_id: int, todo: TodoCreate, current_user: User = Depends(get_current_user)):
+    conn = sqlite3.connect('todos.db')
+    conn.row_factory = sqlite3.Row
+    cursor = conn.cursor()
+    
+    # First check if the todo exists and belongs to the user
+    cursor.execute(
+        'SELECT * FROM todos WHERE id = ? AND user_id = ?',
+        (todo_id, current_user.id)
+    )
+    existing_todo = cursor.fetchone()
+    
+    if not existing_todo:
+        conn.close()
+        raise HTTPException(status_code=404, detail="Todo not found")
+    
+    # Update the todo
+    cursor.execute(
+        '''
+        UPDATE todos 
+        SET title = ?, description = ?, last_modified_at = ?
+        WHERE id = ? AND user_id = ?
+        ''',
+        (todo.title, todo.description, datetime.utcnow(), todo_id, current_user.id)
+    )
+    conn.commit()
+    
+    # Get the updated todo
+    cursor.execute('SELECT * FROM todos WHERE id = ?', (todo_id,))
+    updated_todo = dict(cursor.fetchone())
+    conn.close()
+    
+    return updated_todo
 
 @app.delete("/todos/{todo_id}")
 async def delete_todo(todo_id: int, current_user: User = Depends(get_current_user)):

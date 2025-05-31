@@ -31,6 +31,19 @@ export class TodoService {
       );
   }
 
+  updateTodo(id: number, todo: TodoCreate): Observable<Todo> {
+    return this.http.put<Todo>(
+      `${this.apiUrl}/todos/${id}`,
+      todo,
+      { withCredentials: true }
+    ).pipe(
+      catchError(error => {
+        console.error('Error updating todo:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
   updateTodoStatus(id: number, completed: boolean): Observable<Todo> {
     return this.http.patch<Todo>(
       `${this.apiUrl}/todos/${id}`,

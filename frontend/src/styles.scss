@@ -5,8 +5,24 @@
 @tailwind utilities;
 
 /* Base styles */
+:root {
+  font-family: 'Roboto', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
 body {
   @apply bg-gray-100 min-h-screen;
+  font-family: 'Roboto', sans-serif;
+  margin: 0;
+  padding: 0;
+  line-height: 1.5;
+}
+
+/* Typography */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Roboto', sans-serif;
+  font-weight: 500;
 }
 
 /* Custom component styles */
@@ -34,11 +50,13 @@ body {
   @apply w-full px-4 py-2 border border-gray-300 rounded-md 
          focus:ring-2 focus:ring-blue-500 focus:border-blue-500
          placeholder-gray-400 text-gray-900;
+  font-family: 'Roboto', sans-serif;
 }
 
 .btn {
   @apply px-4 py-2 rounded-md font-medium transition-colors duration-200
          focus:outline-none focus:ring-2 focus:ring-offset-2;
+  font-family: 'Roboto', sans-serif;
 }
 
 .btn-primary {
@@ -68,7 +86,7 @@ body {
 
 /* Custom styles */
 body {
-  @apply bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen font-sans;
+  @apply bg-gradient-to-br from-gray-50 to-gray-100 min-h-screen;
 }
 
 .todo-input {
@@ -79,6 +97,7 @@ body {
          transition-all duration-200
          focus:outline-none focus:ring-2 focus:ring-primary-400 focus:border-primary-400
          hover:border-primary-300;
+  font-family: 'Roboto', sans-serif;
 }
 
 .btn {
