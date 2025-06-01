@@ -11,12 +11,12 @@ from database import (
 
 app = FastAPI()
 
-# Update CORS settings to allow your Vercel-deployed frontend
+# Update CORS settings to allow your Vercel frontend
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
-        "https://your-frontend-url.vercel.app",  # Replace with your actual frontend URL
-        "http://localhost:4200",  # Keep local development URL
+        "https://task-master-frontend.vercel.app",  # Your Vercel frontend URL
+        "http://localhost:4200",  # Local development
     ],
     allow_credentials=True,
     allow_methods=["*"],

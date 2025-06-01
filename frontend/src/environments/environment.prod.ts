@@ -1,4 +1,4 @@
 export const environment = {
   production: true,
-  apiUrl: 'https://your-backend-url.vercel.app'  // Replace with your actual backend URL
+  apiUrl: 'https://your-app-name.railway.app'  // Replace with your Railway backend URL
 }; 
