@@ -1,0 +1,25 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Virtual Environment
+venv/
+ENV/
+
+# IDE
+.idea/
+.vscode/
+
+# Local development
+*.db
+*.sqlite3
+
+# Git
+.git/
+.gitignore
+
+# Node.js (to prevent Node.js detection)
+node_modules/
+package.json
+package-lock.json 
