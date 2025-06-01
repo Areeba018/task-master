@@ -2,8 +2,30 @@ import motor.motor_asyncio
 from bson import ObjectId
 import os
 from dotenv import load_dotenv
+from pathlib import Path
 
 load_dotenv()
+
+# Get the environment
+ENV = os.getenv("ENV", "development")
+
+# Base directory
+BASE_DIR = Path(__file__).resolve().parent
+
+# Database configuration
+if ENV == "production":
+    # In production, use a specific directory that Render.com persists
+    DB_PATH = "/opt/render/project/src/todos.db"
+else:
+    # In development, use local directory
+    DB_PATH = str(BASE_DIR / "todos.db")
+
+# Create the database directory in production
+if ENV == "production":
+    os.makedirs(os.path.dirname(DB_PATH), exist_ok=True)
+
+# SQLite URL
+DATABASE_URL = f"sqlite:///{DB_PATH}"
 
 MONGODB_URL = os.getenv("MONGODB_URL", "mongodb+srv://your-mongodb-url")
 client = motor.motor_asyncio.AsyncIOMotorClient(MONGODB_URL)

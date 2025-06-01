@@ -1,0 +1,12 @@
+services:
+  - type: web
+    name: taskmaster-api
+    env: python
+    buildCommand: pip install -r requirements.txt
+    startCommand: python -m uvicorn main:app --host 0.0.0.0 --port $PORT
+    envVars:
+      - key: PYTHON_VERSION
+        value: 3.11.7
+      - key: PYTHONPATH
+        value: .
+    healthCheckPath: /docs 
