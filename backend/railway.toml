@@ -1,10 +1,15 @@
 [build]
 builder = "nixpacks"
-buildCommand = "pip install -r requirements.txt"
+buildCommand = "python -m pip install --upgrade pip && pip install -r requirements.txt"
 
 [deploy]
-startCommand = "uvicorn main:app --host 0.0.0.0 --port $PORT"
+startCommand = "python -m uvicorn main:app --host 0.0.0.0 --port $PORT"
 restartPolicyType = "ON_FAILURE"
 
-[deploy.env]
-PYTHON_VERSION = "3.11" 
+[[deploy.env]]
+key = "PYTHON_VERSION"
+value = "3.11"
+
+[[deploy.env]]
+key = "NIXPACKS_PYTHON_VERSION"
+value = "3.11" 
