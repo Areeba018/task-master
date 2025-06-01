@@ -1,0 +1,15 @@
+[project]
+name = "taskmaster-backend"
+version = "0.1.0"
+description = "TaskMaster Backend API"
+requires-python = ">=3.11"
+
+[build-system]
+requires = ["pip>=23.0.0"]
+build-backend = "pip.build"
+
+[tool.pytest.ini_options]
+pythonpath = ["."]
+
+[tool.ruff]
+line-length = 120 
