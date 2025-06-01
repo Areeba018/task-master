@@ -11,15 +11,16 @@ from database import (
 
 app = FastAPI()
 
-# Enable CORS with proper configuration
+# Update CORS settings to allow your Vercel-deployed frontend
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:4200"],  # Your frontend URL
-    allow_credentials=True, # Allows sending cookies, authorization headers, or TLS client certificates. Useful if you're using sessions or tokens.
-    allow_methods=["*"], # Allows all HTTP methods (GET, POST, PUT, etc.). "*" means all methods.
-    allow_headers=["*"], # Allows all headers
-    expose_headers=["*"], # Allows all headers to be exposed to the frontend
-    max_age=3600, #  How long (in seconds) the results of a preflight request (like OPTIONS) can be cached. 3600 seconds = 1 hour.
+    allow_origins=[
+        "https://your-frontend-url.vercel.app",  # Replace with your actual frontend URL
+        "http://localhost:4200",  # Keep local development URL
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 # Models

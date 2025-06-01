@@ -1,8 +1,39 @@
+from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy.orm import sessionmaker
+from sqlalchemy.ext.declarative import declarative_base
+import os
+from dotenv import load_dotenv
 import sqlite3
 from sqlite3 import Error
 from typing import List, Dict, Optional
 import bcrypt
 from datetime import datetime, timedelta
+
+load_dotenv()
+
+# Get database URL from environment variable or use SQLite as fallback
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite+aiosqlite:///./todos.db")
+
+# Create async engine
+engine = create_async_engine(
+    DATABASE_URL,
+    echo=True,
+    connect_args={"check_same_thread": False} if DATABASE_URL.startswith("sqlite") else {}
+)
+
+# Create async session factory
+AsyncSessionLocal = sessionmaker(
+    engine, class_=AsyncSession, expire_on_commit=False
+)
+
+Base = declarative_base()
+
+async def get_db():
+    async with AsyncSessionLocal() as session:
+        try:
+            yield session
+        finally:
+            await session.close()
 
 def create_connection():
     try:
