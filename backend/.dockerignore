@@ -1,0 +1,42 @@
+# Version control
+.git
+.gitignore
+.gitattributes
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+ENV/
+env/
+.env
+
+# IDE
+.idea/
+.vscode/
+
+# Local development
+*.db
+*.sqlite3
+.env.local
+
+# Docker
+Dockerfile
+.dockerignore
+
+# Build files
+*.log
+build/
+dist/
+
+# Node.js (to prevent confusion)
+node_modules/
+package*.json 
